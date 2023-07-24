@@ -11,11 +11,9 @@ const animateSortReverse = async (word: string, setLetters: (letters: string[]) 
   let highlightedIndexes = [];
 
   for (let i = 0; i < Math.floor(lettersArray.length / 2); i++) {
-    // Первый шаг: подсвечиваем элементы, готовые к обмену
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setChangingIndexes([i, lettersArray.length - 1 - i]);
 
-    // Второй шаг: обмен элементов и обновление подсветки
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setChangingIndexes([]);
     const temp = lettersArray[i];
@@ -26,16 +24,16 @@ const animateSortReverse = async (word: string, setLetters: (letters: string[]) 
     setHighlightedIndexes([...highlightedIndexes]);
   }
 
-  setHighlightedIndexes(Array.from({ length: lettersArray.length }, (_, i) => i)); // подсветка всех букв после завершения разворота
+  setHighlightedIndexes(Array.from({ length: lettersArray.length }, (_, i) => i));
 };
 
 export const StringComponent: React.FC = () => {
 
-  const [word, setWord] = useState<string>(""); // Укажите тип string для состояния word
-  const [letters, setLetters] = useState<string[]>([]); // Укажите тип массива строк для состояния letters
-  const [highlightedIndexes, setHighlightedIndexes] = useState<number[]>([]); // Обновленное состояние для подсветки букв
-  const [changingIndexes, setChangingIndexes] = useState<number[]>([]); // Новое состояние для подсветки букв, готовых к смене мест
-  const [isSorting, setIsSorting] = useState<boolean>(false); // Состояние для лоадера
+  const [word, setWord] = useState<string>("");
+  const [letters, setLetters] = useState<string[]>([]);
+  const [highlightedIndexes, setHighlightedIndexes] = useState<number[]>([]);
+  const [changingIndexes, setChangingIndexes] = useState<number[]>([]);
+  const [isSorting, setIsSorting] = useState<boolean>(false);
   const [startAnimation, setStartAnimation] = useState<boolean>(false);
   const [isAnimationDone, setIsAnimationDone] = useState<boolean>(false);
 
