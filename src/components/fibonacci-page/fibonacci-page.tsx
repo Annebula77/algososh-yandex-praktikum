@@ -4,6 +4,7 @@ import { Input } from "../ui/input/input";
 import { Button } from "../ui/button/button";
 import styles from './fibonacci.module.css';
 import { Circle } from "../ui/circle/circle";
+import { SHORT_DELAY_IN_MS } from "../../constants/delays";
 
 
 export const FibonacciPage: React.FC = () => {
@@ -41,7 +42,7 @@ export const FibonacciPage: React.FC = () => {
       setTimeout(() => {
         setDisplayedIndexes((prev) => [...prev, index]);
         displayNumbers(index + 1, total);
-      }, 500);
+      }, SHORT_DELAY_IN_MS);
     } else {
       setIsLoading(false);
     }

@@ -5,16 +5,17 @@ import { Button } from "../ui/button/button";
 import styles from './string.module.css';
 import { Circle } from "../ui/circle/circle";
 import { ElementStates } from "../../types/element-states";
+import { DELAY_IN_MS } from "../../constants/delays";
 
 const animateSortReverse = async (word: string, setLetters: (letters: string[]) => void, setHighlightedIndexes: (indexes: number[]) => void, setChangingIndexes: (indexes: number[]) => void) => {
   let lettersArray = word.split("");
   let highlightedIndexes = [];
 
   for (let i = 0; i < Math.floor(lettersArray.length / 2); i++) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, DELAY_IN_MS));
     setChangingIndexes([i, lettersArray.length - 1 - i]);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, DELAY_IN_MS));
     setChangingIndexes([]);
     const temp = lettersArray[i];
     lettersArray[i] = lettersArray[lettersArray.length - 1 - i];
