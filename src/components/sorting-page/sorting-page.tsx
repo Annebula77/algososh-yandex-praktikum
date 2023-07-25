@@ -16,6 +16,7 @@ export const SortingPage: React.FC = () => {
   const [sortDirection, setSortDirection] = useState(Direction.Ascending);
   const [isAscendingLoading, setIsAscendingLoading] = useState(false);
   const [isDescendingLoading, setIsDescendingLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
 
   const randomArr = () => {
@@ -42,8 +43,10 @@ export const SortingPage: React.FC = () => {
 
     if (direction === Direction.Ascending) {
       setIsAscendingLoading(true);
+      setIsProcessing(true);
     } else {
       setIsDescendingLoading(true);
+      setIsProcessing(true);
     }
     let sortedArray = [...array];
     const updateArray = async (arr: ArrayElementType[]) => {
@@ -52,29 +55,36 @@ export const SortingPage: React.FC = () => {
     };
 
     if (sortType === 'Выбор') {
+      let sortedArray = [];
+      let workingArray = [...array];
 
-      for (let i = 0; i < sortedArray.length; i++) {
-        let minIndex = i;
-        sortedArray[i].state = ElementStates.Changing;
-        await updateArray(sortedArray);
-        for (let j = i + 1; j < sortedArray.length; j++) {
-          sortedArray[j].state = ElementStates.Changing;
-          await updateArray(sortedArray);
-          if ((direction === Direction.Ascending && sortedArray[j].value < sortedArray[minIndex].value) ||
-            (direction === Direction.Descending && sortedArray[j].value > sortedArray[minIndex].value)) {
-            sortedArray[minIndex].state = ElementStates.Default;
+      while (workingArray.length > 0) {
+        let minIndex = 0;
+        workingArray[0].state = ElementStates.Changing;
+        await updateArray([...sortedArray, ...workingArray]);
+
+        for (let j = 1; j < workingArray.length; j++) {
+          workingArray[j].state = ElementStates.Changing;
+          await updateArray([...sortedArray, ...workingArray]);
+
+          if ((direction === Direction.Ascending && workingArray[j].value < workingArray[minIndex].value) ||
+            (direction === Direction.Descending && workingArray[j].value > workingArray[minIndex].value)) {
+            workingArray[minIndex].state = ElementStates.Default;
             minIndex = j;
-
           } else {
-            sortedArray[j].state = ElementStates.Default;
+            workingArray[j].state = ElementStates.Default;
           }
-          await updateArray(sortedArray);
-        }
-        [sortedArray[i], sortedArray[minIndex]] = [sortedArray[minIndex], sortedArray[i]];
-        sortedArray[i].state = ElementStates.Modified;
-        await updateArray(sortedArray);
 
+          await updateArray([...sortedArray, ...workingArray]);
+        }
+
+        workingArray[minIndex].state = ElementStates.Modified;
+        const [selectedElement] = workingArray.splice(minIndex, 1);
+        sortedArray.push(selectedElement);
+
+        await updateArray([...sortedArray, ...workingArray]);
       }
+
     } else {
 
       for (let i = 0; i < sortedArray.length; i++) {
@@ -97,9 +107,11 @@ export const SortingPage: React.FC = () => {
 
     if (direction === Direction.Ascending) {
       setIsAscendingLoading(false);
+      setIsProcessing(false);
 
     } else {
       setIsDescendingLoading(false);
+      setIsProcessing(false);
 
     }
 
@@ -115,14 +127,14 @@ export const SortingPage: React.FC = () => {
     <SolutionLayout title="Сортировка массива" extraClass="pb-2">
       <div className={styles.content}>
         <div className={styles.radio}>
-          <RadioInput label="Выбор" name="sortType" onChange={() => setSortType('Выбор')} checked={sortType === 'Выбор'} />
-          <RadioInput label="Пузырёк" name="sortType" onChange={() => setSortType('Пузырёк')} checked={sortType === 'Пузырёк'} />
+          <RadioInput label="Выбор" name="sortType" onChange={() => setSortType('Выбор')} checked={sortType === 'Выбор'} disabled={isProcessing} />
+          <RadioInput label="Пузырёк" name="sortType" onChange={() => setSortType('Пузырёк')} checked={sortType === 'Пузырёк'} disabled={isProcessing} />
         </div>
         <div className={styles.boxes}>
-          <Button text="По возрастанию" onClick={() => handleSortDirectionClick(Direction.Ascending)} isLoader={isAscendingLoading} sorting={Direction.Ascending} />
-          <Button text="По убыванию" onClick={() => handleSortDirectionClick(Direction.Descending)} isLoader={isDescendingLoading} sorting={Direction.Descending} />
+          <Button text="По возрастанию" onClick={() => handleSortDirectionClick(Direction.Ascending)} isLoader={isAscendingLoading} sorting={Direction.Ascending} disabled={isProcessing} />
+          <Button text="По убыванию" onClick={() => handleSortDirectionClick(Direction.Descending)} isLoader={isDescendingLoading} sorting={Direction.Descending} disabled={isProcessing} />
         </div>
-        <Button text="Новый массив" onClick={handleNewArrayClick} />
+        <Button text="Новый массив" onClick={handleNewArrayClick} disabled={isProcessing} />
       </div>
       <div className={styles.array__container}>
         {array.map((item, index) => (
