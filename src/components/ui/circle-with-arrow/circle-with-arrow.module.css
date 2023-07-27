@@ -1,0 +1,19 @@
+.arrow {
+  margin-left: 15px;
+  font-weight: 700;
+  color: var(--default-color);
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.containerAbove .circle {
+  top: -70px;
+}
+
+.containerBelow .circle {
+  bottom: -70px;
+}
