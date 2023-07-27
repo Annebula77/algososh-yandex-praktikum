@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from './list.module.css';
 import { Input } from "../ui/input/input";
 import { Button } from "../ui/button/button";
 import { CircleWithArrow } from "../ui/circle-with-arrow/circle-with-arrow";
+import { Circle } from "../ui/circle/circle";
 import { ElementStates } from "../../types/element-states";
 import { SHORT_DELAY_IN_MS } from "../../constants/delays";
 import { LinkedList } from "./linked-list";
@@ -33,24 +34,32 @@ export const ListPage: React.FC = () => {
   const [animationIndex, setAnimationIndex] = useState<number | null>(null);
   const [tempElement, setTempElement] = useState<string | null>(null);
   const [deleteAnimationIndex, setDeleteAnimationIndex] = useState<number | null>(null);
-  const [changingElementId, setChangingElementId] = useState<string | null>(null);
   const [isAddingToTail, setIsAddingToTail] = useState(false);
   const [isAddingToHead, setIsAddingToHead] = useState(false);
   type RemovingNode = { id: string, value: string } | null;
   const [removingHead, setRemovingHead] = useState<RemovingNode>(null);
   const [removingTail, setRemovingTail] = useState<RemovingNode>(null);
+  const [insertionIndex, setInsertionIndex] = useState<number | null>(null);
+  const [delitionIndex, setDelitionIndex] = useState<number | null>(null);
+
+  const [modifiedElementId, setModifiedElementId] = useState<string | null>(null); // Добавляем новое состояние
+
+
+
 
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   };
 
+  const handleIndexChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIndexValue(event.target.value);
+  };
+
   const handleAddToHead = () => {
     const newItem = new ListNode(inputValue);
     setIsAddingToHead(true);
     setIsLoadingAddToHead(true);
-    setNewHead(newItem);
-    setChangingElementId(newItem.id);
 
     setTimeout(() => {
       list.addToHead(newItem.value);
@@ -58,24 +67,20 @@ export const ListPage: React.FC = () => {
       setInputValue("");
       setIsLoadingAddToHead(false);
       setIsAddingToHead(false);
+      setModifiedElementId(newItem.id); // Обновляем modifiedElementId
     }, SHORT_DELAY_IN_MS);
 
-    // Увеличиваем задержку перед сменой стейта на Modified
+    // Добавляем другую функцию setTimeout
     setTimeout(() => {
-      setChangingElementId(null);
-    }, SHORT_DELAY_IN_MS * 1); // Удваиваем задержку
-
-    // Увеличиваем задержку перед удалением newHead
-    setTimeout(() => {
-      setNewHead(null);
-    }, SHORT_DELAY_IN_MS * 2); // Удваиваем задержку
+      setModifiedElementId(null); // Возвращаем modifiedElementId к состоянию по умолчанию
+    }, SHORT_DELAY_IN_MS + 2000);
   };
 
   const handleAddToTail = () => {
     const newItem = new ListNode(inputValue);
-    setIsAddingToTail(true); // включаем состояние
+    setIsAddingToTail(true);
     setIsLoadingAddToTail(true);
-    setChangingElementId(newItem.id);
+
 
     setTimeout(() => {
       list.addToTail(newItem.value);
@@ -85,11 +90,10 @@ export const ListPage: React.FC = () => {
     }, SHORT_DELAY_IN_MS);
 
     setTimeout(() => {
-      setChangingElementId(null);
-      setIsAddingToTail(false); // выключаем состояние
+
+      setIsAddingToTail(false);
     }, SHORT_DELAY_IN_MS * 2);
   };
-
 
   const handleRemoveFromHead = () => {
     setIsLoadingDeleteHead(true);
@@ -100,7 +104,7 @@ export const ListPage: React.FC = () => {
         value: removedValue
       });
       setTimeout(() => {
-        setList(list); // обновить состояние списка
+        setList(list);
         setIsLoadingDeleteHead(false);
         setRemovingHead(null);
       }, SHORT_DELAY_IN_MS);
@@ -116,19 +120,16 @@ export const ListPage: React.FC = () => {
         value: removedValue
       });
       setTimeout(() => {
-        setList(list); // обновить состояние списка
+        setList(list);
         setIsLoadingDeleteTail(false);
         setRemovingTail(null);
       }, SHORT_DELAY_IN_MS);
     }
   };
-  const handleIndexChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIndexValue(event.target.value);
-  };
-
   const handleInsertAtIndex = () => {
     setIsLoadingByIndex(true);
     setTempElement(inputValue); // устанавливаем временный элемент
+    setInsertionIndex(Number(indexValue));
     let i = 0;
     const animation = setInterval(() => {
       setAnimationIndex(i);
@@ -142,12 +143,14 @@ export const ListPage: React.FC = () => {
         setIsLoadingByIndex(false);
         setAnimationIndex(null);
         setTempElement(null);
+        setInsertionIndex(null);
       }
     }, SHORT_DELAY_IN_MS);
   };
 
   const handleRemoveAtIndex = () => {
     setIsLoadingDeleteByIndex(true);
+    setDelitionIndex(Number(indexValue));
     let i = 0;
     const animation = setInterval(() => {
       setDeleteAnimationIndex(i);
@@ -158,11 +161,18 @@ export const ListPage: React.FC = () => {
         setIsLoadingDeleteByIndex(false);
         setDeleteAnimationIndex(null);
         clearInterval(animation);
+        setDelitionIndex(null);
       }
       i++;
     }, SHORT_DELAY_IN_MS);
   };
+
+
   const listArray = list.toArray();
+
+
+
+
 
   return (
     <SolutionLayout title="Связный список">
@@ -208,23 +218,20 @@ export const ListPage: React.FC = () => {
             letter={node.value}
             index={index}
             showArrow={index !== listArray.length - 1}
-            state={
-              node.id === changingElementId // Если id элемента равен id изменяющегося элемента
-                ? ElementStates.Modified // Если это изменяющийся элемент, то мы устанавливаем состояние Modified
-                : ElementStates.Default
-            }
+            state={node.id === modifiedElementId ? ElementStates.Modified : ElementStates.Default} // Изменяем состояние в зависимости от modifiedElementId
             head={
-              (index === 0 && isAddingToHead && !isAddingToTail) || // Для добавления в голову
-                (index === listArray.length - 1 && isAddingToTail && !isAddingToHead) // Для добавления в хвост
+              (index === 0 && isAddingToHead && !isAddingToTail) || // For adding to the head
+                (index === listArray.length - 1 && isAddingToTail && !isAddingToHead) || // For adding to the tail
+                (index === insertionIndex && !isAddingToHead && !isAddingToTail)
                 ? (
-                  <CircleWithArrow
+                  <Circle
                     key={newHead?.id || nanoid()}
                     letter={newHead?.value || inputValue}
                     state={ElementStates.Changing}
                     isSmall={true}
                   />
                 )
-                : index === 0 && !(isAddingToHead || isAddingToTail) // Для отображения "head" на первом элементе при первом рендере
+                : index === 0 && !(isAddingToHead || isAddingToTail || isLoadingByIndex) // For showing "head" on the first element during the first render
                   ? "head"
                   : undefined
             }
@@ -233,7 +240,7 @@ export const ListPage: React.FC = () => {
               // Если удаляем голову и текущий элемент станет новой головой
               (index === 0 && isLoadingDeleteHead)
                 ? (
-                  <CircleWithArrow
+                  <Circle
                     key={removingHead?.id || nanoid()}
                     letter={removingHead?.value || listArray[index].value}
                     state={ElementStates.Changing}
@@ -243,17 +250,26 @@ export const ListPage: React.FC = () => {
                 // Если удаляем хвост и текущий элемент станет новым хвостом
                 : (index === listArray.length - 1 && isLoadingDeleteTail)
                   ? (
-                    <CircleWithArrow
+                    <Circle
                       key={removingTail?.id || nanoid()}
                       letter={removingTail?.value || listArray[index].value}
                       state={ElementStates.Changing}
                       isSmall={true}
                     />
                   )
-                  // Если ничего не добавляем или не удаляем, и текущий элемент является последним
-                  : (index === listArray.length - 1 && !(isAddingToHead || isAddingToTail || isLoadingDeleteHead || isLoadingDeleteTail))
-                    ? "tail"
-                    : undefined
+                  : (index === delitionIndex)
+                    ? (
+                      <Circle
+                        key={removingTail?.id || nanoid()}
+                        letter={removingTail?.value || listArray[index].value}
+                        state={ElementStates.Changing}
+                        isSmall={true}
+                      />
+                    )
+                    // Если ничего не добавляем или не удаляем, и текущий элемент является последним
+                    : (index === listArray.length - 1 && !(isAddingToHead || isAddingToTail || isLoadingDeleteHead || isLoadingDeleteTail))
+                      ? "tail"
+                      : undefined
             }
           />
         ))}
