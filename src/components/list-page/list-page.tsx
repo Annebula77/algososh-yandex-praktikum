@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from './list.module.css';
 import { Input } from "../ui/input/input";
@@ -11,32 +11,45 @@ import { LinkedList } from "./linked-list";
 import { ListNode } from "./list-node";
 import { nanoid } from 'nanoid';
 
-export type LinkedArrItem = { value: string; state: ElementStates };
+export type LinkedArrItem = { value: string; state: ElementStates }; //change name
 
 export const defaultArray: LinkedArrItem[] = [
   { value: '0', state: ElementStates.Default },
   { value: '34', state: ElementStates.Default },
   { value: '8', state: ElementStates.Default },
   { value: '1', state: ElementStates.Default }
-]
+] //change name
+
+type RemovingNode = { id: string, value: string } | null;
 
 
 export const ListPage: React.FC = () => {
+  const [linkedArray, setLinkedArray] = useState<LinkedList<LinkedArrItem>>(new LinkedList(defaultArray));
 
-  const initialList = new LinkedList<string>();
-  initialList.addToTail("0");
-  initialList.addToTail("34");
-  initialList.addToTail("8");
-  initialList.addToTail("1");
+  const [onAddLoading, setOnAddLoading] = useState({
+    index: false,
+    tail: false,
+    head: false,
+  });
 
-  const [isLoadingAddToHead, setIsLoadingAddToHead] = useState(false);
-  const [isLoadingAddToTail, setIsLoadingAddToTail] = useState(false);
-  const [isLoadingDeleteHead, setIsLoadingDeleteHead] = useState(false);
-  const [isLoadingDeleteTail, setIsLoadingDeleteTail] = useState(false);
-  const [isLoadingByIndex, setIsLoadingByIndex] = useState(false);
-  const [isLoadingDeleteByIndex, setIsLoadingDeleteByIndex] = useState(false);
+  const [onDeleteLoading, setOnDeleteLoading] = useState({
+    index: false,
+    tail: false,
+    head: false,
+  });
 
-  const [list, setList] = useState(initialList);
+
+
+  const [addCircle, setAddCircle] = useState({
+    index: -1,
+    value: "",
+    state: ElementStates.Changing,
+  });
+  const [deleteCircle, setDeleteCircle] = useState({
+    index: -1,
+    value: "",
+    state: ElementStates.Changing,
+  });
   const [inputValue, setInputValue] = useState("");
   const [indexValue, setIndexValue] = useState(""); // новое состояние для индекса
   const [newHead, setNewHead] = useState<ListNode<string> | null>(null);
@@ -45,13 +58,11 @@ export const ListPage: React.FC = () => {
   const [deleteAnimationIndex, setDeleteAnimationIndex] = useState<number | null>(null);
   const [isAddingToTail, setIsAddingToTail] = useState(false);
   const [isAddingToHead, setIsAddingToHead] = useState(false);
-  type RemovingNode = { id: string, value: string } | null;
   const [removingHead, setRemovingHead] = useState<RemovingNode>(null);
   const [removingTail, setRemovingTail] = useState<RemovingNode>(null);
   const [insertionIndex, setInsertionIndex] = useState<number | null>(null);
   const [delitionIndex, setDelitionIndex] = useState<number | null>(null);
 
-  const [modifiedElementId, setModifiedElementId] = useState<string | null>(null); // Добавляем новое состояние
 
 
 
@@ -65,121 +76,198 @@ export const ListPage: React.FC = () => {
     setIndexValue(event.target.value);
   };
 
-  const handleAddToHead = async () => {
-    const newItem = new ListNode(inputValue);
-    setIsAddingToHead(true);
-    setIsLoadingAddToHead(true);
+  const listArray = React.useRef(new LinkedList(defaultArray));
+  const data = listArray.current.getData(); //change name
 
-    await setTimeout(() => {
-      list.addToHead(newItem.value);
-      setList(list);
-      setInputValue("");
-      setIsLoadingAddToHead(false);
-      setIsAddingToHead(false);
-      setModifiedElementId(newItem.id); // Обновляем modifiedElementId
+  const handleAddToHead = () => {
+    setOnAddLoading({ ...onAddLoading, head: true });
+    setIsAddingToHead(true);
+
+    setAddCircle({
+      index: 0,
+      value: inputValue,
+      state: ElementStates.Changing,
+    });
+
+    setTimeout(() => {
+      const newItem = new ListNode(inputValue);
+      const newItemForList = { value: newItem.value, state: ElementStates.Modified };
+
+      listArray.current.addToHead(newItemForList);
+
+      setAddCircle({
+        index: -1,
+        value: "",
+        state: ElementStates.Modified,
+      });
+
+      setTimeout(() => {
+        setAddCircle({
+          index: -1,
+          value: "",
+          state: ElementStates.Default,
+        });
+      }, SHORT_DELAY_IN_MS);
     }, SHORT_DELAY_IN_MS);
 
-    // // Добавляем другую функцию setTimeout
-    // setTimeout(() => {
-    //   setModifiedElementId(null); // Возвращаем modifiedElementId к состоянию по умолчанию
-    // }, SHORT_DELAY_IN_MS + 2000);
+    setTimeout(() => {
+      setInputValue("");
+      setOnAddLoading({ ...onAddLoading, head: false });
+      setIsAddingToHead(false);
+    }, SHORT_DELAY_IN_MS);
   };
+
 
   const handleAddToTail = () => {
-    const newItem = new ListNode(inputValue);
+    setOnAddLoading({ ...onAddLoading, tail: true });
     setIsAddingToTail(true);
-    setIsLoadingAddToTail(true);
 
+    const newItem = new ListNode(inputValue);
+    const newItemForList = { value: newItem.value, state: ElementStates.Changing }; // Замените ElementStates.Changing на соответствующий статус
+
+    listArray.current.addToTail(newItemForList);
+
+    const lastIndex = listArray.current.getLength() - 1;
+
+    setAddCircle({
+      index: lastIndex, // Предполагая, что индекс последнего элемента равен длине списка
+      value: inputValue,
+      state: ElementStates.Changing,
+    });
 
     setTimeout(() => {
-      list.addToTail(newItem.value);
-      setList(list);
       setInputValue("");
-      setIsLoadingAddToTail(false);
-    }, SHORT_DELAY_IN_MS);
-
-    setTimeout(() => {
-
+      setOnAddLoading({ ...onAddLoading, tail: false });
       setIsAddingToTail(false);
-    }, SHORT_DELAY_IN_MS * 2);
+      setAddCircle({
+        index: -1,
+        value: "",
+        state: ElementStates.Default,
+      });
+    }, SHORT_DELAY_IN_MS);
   };
 
+
   const handleRemoveFromHead = () => {
-    setIsLoadingDeleteHead(true);
-    const removedValue = list.removeHead();
-    if (removedValue !== null) {
+    setOnDeleteLoading({ ...onDeleteLoading, head: true });
+
+    setTimeout(() => {
       setRemovingHead({
         id: nanoid(),
-        value: removedValue
+        value: newHead ? newHead.value : "",
       });
-      setTimeout(() => {
-        setList(list);
-        setIsLoadingDeleteHead(false);
-        setRemovingHead(null);
-      }, SHORT_DELAY_IN_MS);
-    }
+      setDeleteCircle({
+        index: 0,
+        value: newHead ? newHead.value : "",
+        state: ElementStates.Changing,
+      });
+      setNewHead(null);
+      setOnDeleteLoading({ ...onDeleteLoading, head: false });
+      setDeleteCircle({
+        index: -1,
+        value: "",
+        state: ElementStates.Default,
+      });
+    }, SHORT_DELAY_IN_MS);
   };
 
   const handleRemoveFromTail = () => {
-    setIsLoadingDeleteTail(true);
-    const removedValue = list.removeTail();
-    if (removedValue !== null) {
+    setOnDeleteLoading({ ...onDeleteLoading, tail: true });
+
+    const removedItem = listArray.current.removeTail(); // Теперь это объект типа LinkedArrItem
+    if (removedItem !== null) {
       setRemovingTail({
         id: nanoid(),
-        value: removedValue
+        value: removedItem.value // Извлекаем значение из объекта
       });
+
+      const lastIndex = listArray.current.getLength() - 1;
+
+      setDeleteCircle({
+        index: lastIndex,
+        value: removedItem.value, // Извлекаем значение из объекта
+        state: ElementStates.Changing,
+      });
+
       setTimeout(() => {
-        setList(list);
-        setIsLoadingDeleteTail(false);
+        setOnDeleteLoading({ ...onDeleteLoading, tail: false });
+        setDeleteCircle({
+          index: -1,
+          value: "",
+          state: ElementStates.Default,
+        });
         setRemovingTail(null);
       }, SHORT_DELAY_IN_MS);
     }
   };
+
   const handleInsertAtIndex = () => {
-    setIsLoadingByIndex(true);
-    setTempElement(inputValue); // устанавливаем временный элемент
+    setOnAddLoading({ ...onAddLoading, index: true });
     setInsertionIndex(Number(indexValue));
+
+    const newItem = new ListNode(inputValue);
+    const newItemForList = { value: newItem.value, state: ElementStates.Changing };
+
+    listArray.current.insertAtIndex(newItemForList, Number(indexValue));
+
+
+    setAddCircle({
+      index: Number(indexValue),
+      value: inputValue,
+      state: ElementStates.Changing,
+    });
+
     let i = 0;
     const animation = setInterval(() => {
       setAnimationIndex(i);
       i++;
       if (i > Number(indexValue)) {
         clearInterval(animation);
-        list.insertAtIndex(inputValue, Number(indexValue));
-        setList(list);
         setInputValue("");
         setIndexValue("");
-        setIsLoadingByIndex(false);
+        setOnAddLoading({ ...onAddLoading, index: false });
         setAnimationIndex(null);
-        setTempElement(null);
+        setAddCircle({
+          index: -1,
+          value: "",
+          state: ElementStates.Default,
+        });
         setInsertionIndex(null);
       }
     }, SHORT_DELAY_IN_MS);
   };
 
   const handleRemoveAtIndex = () => {
-    setIsLoadingDeleteByIndex(true);
+    setOnDeleteLoading({ ...onDeleteLoading, index: true });
     setDelitionIndex(Number(indexValue));
+
+    const removedItem = listArray.current.removeAtIndex(Number(indexValue));
+    if (removedItem !== null) {
+      setDeleteCircle({
+        index: Number(indexValue),
+        value: removedItem.value, // изменил на removedItem.value
+        state: ElementStates.Changing,
+      });
+    }
+
     let i = 0;
     const animation = setInterval(() => {
       setDeleteAnimationIndex(i);
       if (i === Number(indexValue)) {
-        list.removeAtIndex(Number(indexValue));
-        setList(list);
-        setIndexValue("");
-        setIsLoadingDeleteByIndex(false);
-        setDeleteAnimationIndex(null);
         clearInterval(animation);
+        setIndexValue("");
+        setOnDeleteLoading({ ...onDeleteLoading, index: false });
+        setDeleteAnimationIndex(null);
+        setDeleteCircle({
+          index: -1,
+          value: "",
+          state: ElementStates.Default,
+        });
         setDelitionIndex(null);
       }
       i++;
     }, SHORT_DELAY_IN_MS);
   };
-
-
-  const listArray = React.useRef(new LinkedList(defaultArray));
-  const data = listArray.current.getData();
-
 
 
 
@@ -199,10 +287,10 @@ export const ListPage: React.FC = () => {
             <p className={styles.text}>Максимум — 4 символа</p>
           </div>
           <div className={styles.boxes}>
-            <Button text="Добавить в head" extraClass={styles.button__extra_top} onClick={handleAddToHead} isLoader={isLoadingAddToHead} disabled={!inputValue.trim()} />
-            <Button text="Добавить в tail" extraClass={styles.button__extra_top} onClick={handleAddToTail} isLoader={isLoadingAddToTail} disabled={!inputValue.trim()} />
-            <Button text="Удалить из head" extraClass={styles.button__extra_top} onClick={handleRemoveFromHead} isLoader={isLoadingDeleteHead} disabled={isLoadingDeleteHead} />
-            <Button text="Удалить из tail" extraClass={styles.button__extra_top} onClick={handleRemoveFromTail} isLoader={isLoadingDeleteTail} disabled={isLoadingDeleteTail} />
+            <Button text="Добавить в head" extraClass={styles.button__extra_top} onClick={handleAddToHead} isLoader={onAddLoading.head} disabled={!inputValue.trim()} />
+            <Button text="Добавить в tail" extraClass={styles.button__extra_top} onClick={handleAddToTail} isLoader={onAddLoading.tail} disabled={!inputValue.trim()} />
+            <Button text="Удалить из head" extraClass={styles.button__extra_top} onClick={handleRemoveFromHead} isLoader={onDeleteLoading.head} disabled={onDeleteLoading.head} />
+            <Button text="Удалить из tail" extraClass={styles.button__extra_top} onClick={handleRemoveFromTail} isLoader={onDeleteLoading.tail} disabled={onDeleteLoading.tail} />
           </div>
         </div>
         <div className={styles.wrap}>
@@ -216,8 +304,8 @@ export const ListPage: React.FC = () => {
             />
           </div>
           <div className={styles.boxes}>
-            <Button text="Добавить по индексу" extraClass={styles.button__extra_bottom} onClick={handleInsertAtIndex} isLoader={isLoadingByIndex} disabled={isLoadingByIndex} />
-            <Button text="Удалить по индексу" extraClass={styles.button__extra_bottom} onClick={handleRemoveAtIndex} isLoader={isLoadingDeleteByIndex} disabled={isLoadingDeleteByIndex} />
+            <Button text="Добавить по индексу" extraClass={styles.button__extra_bottom} onClick={handleInsertAtIndex} isLoader={onAddLoading.index} disabled={onAddLoading.index} />
+            <Button text="Удалить по индексу" extraClass={styles.button__extra_bottom} onClick={handleRemoveAtIndex} isLoader={onDeleteLoading.index} disabled={onDeleteLoading.index} />
           </div>
         </div>
       </div>
@@ -225,13 +313,13 @@ export const ListPage: React.FC = () => {
         {data.array.map((node, index) => (
           <CircleWithArrow
             key={node.id}
-            letter={node.value}
+            letter={node.value.value}
             index={index}
-            showArrow={index !== listArray.length - 1}
-            state={node.id === modifiedElementId ? ElementStates.Modified : ElementStates.Default} // Изменяем состояние в зависимости от modifiedElementId
+            showArrow={index !== listArray.current.getLength() - 1}
+            state={node.value.state}
             head={
               (index === 0 && isAddingToHead && !isAddingToTail) || // For adding to the head
-                (index === listArray.length - 1 && isAddingToTail && !isAddingToHead) || // For adding to the tail
+                (index === listArray.current.getLength() - 1 && isAddingToTail && !isAddingToHead) || // For adding to the tail
                 (index === insertionIndex && !isAddingToHead && !isAddingToTail)
                 ? (
                   <Circle
@@ -241,28 +329,28 @@ export const ListPage: React.FC = () => {
                     isSmall={true}
                   />
                 )
-                : index === 0 && !(isAddingToHead || isAddingToTail || isLoadingByIndex) // For showing "head" on the first element during the first render
+                : index === 0 && !(isAddingToHead || isAddingToTail || onAddLoading.index) // For showing "head" on the first element during the first render
                   ? "head"
                   : undefined
             }
 
             tail={
               // Если удаляем голову и текущий элемент станет новой головой
-              (index === 0 && isLoadingDeleteHead)
+              (index === 0 && onDeleteLoading.head)
                 ? (
                   <Circle
                     key={removingHead?.id || nanoid()}
-                    letter={removingHead?.value || listArray[index].value}
+                    letter={removingHead?.value || String(data.array[index].value)}
                     state={ElementStates.Changing}
                     isSmall={true}
                   />
                 )
                 // Если удаляем хвост и текущий элемент станет новым хвостом
-                : (index === listArray.length - 1 && isLoadingDeleteTail)
+                : (index === listArray.current.getLength() - 1 && onDeleteLoading.tail)
                   ? (
                     <Circle
                       key={removingTail?.id || nanoid()}
-                      letter={removingTail?.value || listArray[index].value}
+                      letter={removingTail?.value || String(data.array[index].value)}
                       state={ElementStates.Changing}
                       isSmall={true}
                     />
@@ -271,13 +359,13 @@ export const ListPage: React.FC = () => {
                     ? (
                       <Circle
                         key={removingTail?.id || nanoid()}
-                        letter={removingTail?.value || listArray[index].value}
+                        letter={removingTail?.value || String(data.array[index].value)}
                         state={ElementStates.Changing}
                         isSmall={true}
                       />
                     )
                     // Если ничего не добавляем или не удаляем, и текущий элемент является последним
-                    : (index === listArray.length - 1 && !(isAddingToHead || isAddingToTail || isLoadingDeleteHead || isLoadingDeleteTail))
+                    : (index === listArray.current.getLength() - 1 && !(isAddingToHead || isAddingToTail || onDeleteLoading.head || onDeleteLoading.tail))
                       ? "tail"
                       : undefined
             }

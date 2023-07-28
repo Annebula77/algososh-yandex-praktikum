@@ -1,7 +1,8 @@
 import { ListNode } from "./list-node";
+import { LinkedArrItem } from "./list-page";
 
 
-export class LinkedList<T> {
+export class LinkedList<T extends LinkedArrItem> {
   head: ListNode<T> | null = null;
   tail: ListNode<T> | null = null;
 
@@ -55,7 +56,7 @@ export class LinkedList<T> {
     this.tail = currentNode;
     return removedValue;
   }
-
+  //добавление всех узлов в массив
   toArray() {
     let arr: ListNode<T>[] = [];
     let currentNode = this.head;
@@ -92,16 +93,18 @@ export class LinkedList<T> {
     }
   }
 
-  removeAtIndex(index: number) {
+  removeAtIndex(index: number): LinkedArrItem | null {
     // Специальные случаи: пустой список или удаление из начала
     if (index === 0 || !this.head) {
+      const removedHeadValue = this.head ? this.head.value : null;
       this.removeHead();
-      return;
+      return removedHeadValue;
     }
 
     // Инициализация счетчика и начального узла
     let i = 0;
     let node = this.head;
+    let removedValue: LinkedArrItem | null = null;
 
     // Перемещение к нужной позиции
     while (i < index - 1 && node.next) {
@@ -111,6 +114,7 @@ export class LinkedList<T> {
 
     // Удаление узла
     if (node.next) {
+      removedValue = node.next.value; // Теперь это LinkedArrItem, а не T
       node.next = node.next.next;
     }
 
@@ -118,7 +122,24 @@ export class LinkedList<T> {
     if (node.next === null) {
       this.tail = node;
     }
+
+    return removedValue; // Возвращает значение удаленного узла
   }
+
+
+  getLength() {
+    let length = 0;
+    let currentNode = this.head;
+
+    while (currentNode !== null) {
+      length++;
+      currentNode = currentNode.next;
+    }
+
+    return length;
+  }
+
+  //чтение массива 
 
   getData() {
     const array = this.toArray();  // заменили this.array на вызов метода toArray()
