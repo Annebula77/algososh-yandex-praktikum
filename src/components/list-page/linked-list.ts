@@ -119,4 +119,13 @@ export class LinkedList<T> {
       this.tail = node;
     }
   }
+
+  getData() {
+    const array = this.toArray();  // заменили this.array на вызов метода toArray()
+    const tail = this.tail;
+    const head = this.head;
+    return { array, tail, head };
+  }
+
+
 }

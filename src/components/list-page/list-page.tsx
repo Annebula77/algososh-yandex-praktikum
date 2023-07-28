@@ -11,6 +11,15 @@ import { LinkedList } from "./linked-list";
 import { ListNode } from "./list-node";
 import { nanoid } from 'nanoid';
 
+export type LinkedArrItem = { value: string; state: ElementStates };
+
+export const defaultArray: LinkedArrItem[] = [
+  { value: '0', state: ElementStates.Default },
+  { value: '34', state: ElementStates.Default },
+  { value: '8', state: ElementStates.Default },
+  { value: '1', state: ElementStates.Default }
+]
+
 
 export const ListPage: React.FC = () => {
 
@@ -168,7 +177,8 @@ export const ListPage: React.FC = () => {
   };
 
 
-  const listArray = list.toArray();
+  const listArray = React.useRef(new LinkedList(defaultArray));
+  const data = listArray.current.getData();
 
 
 
@@ -212,7 +222,7 @@ export const ListPage: React.FC = () => {
         </div>
       </div>
       <div className={styles.circle__container}>
-        {listArray.map((node, index) => (
+        {data.array.map((node, index) => (
           <CircleWithArrow
             key={node.id}
             letter={node.value}
