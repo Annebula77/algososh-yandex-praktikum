@@ -14,7 +14,8 @@ export class LinkedList<T> {
   }
 
   addToHead(value: T) {
-    const newNode = new ListNode(value, this.head);
+    const newNode = new ListNode(value);
+    newNode.next = this.head
     this.head = newNode;
     if (!this.tail) this.tail = newNode;
   }

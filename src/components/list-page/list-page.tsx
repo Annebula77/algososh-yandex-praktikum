@@ -56,12 +56,12 @@ export const ListPage: React.FC = () => {
     setIndexValue(event.target.value);
   };
 
-  const handleAddToHead = () => {
+  const handleAddToHead = async () => {
     const newItem = new ListNode(inputValue);
     setIsAddingToHead(true);
     setIsLoadingAddToHead(true);
 
-    setTimeout(() => {
+    await setTimeout(() => {
       list.addToHead(newItem.value);
       setList(list);
       setInputValue("");
@@ -70,10 +70,10 @@ export const ListPage: React.FC = () => {
       setModifiedElementId(newItem.id); // Обновляем modifiedElementId
     }, SHORT_DELAY_IN_MS);
 
-    // Добавляем другую функцию setTimeout
-    setTimeout(() => {
-      setModifiedElementId(null); // Возвращаем modifiedElementId к состоянию по умолчанию
-    }, SHORT_DELAY_IN_MS + 2000);
+    // // Добавляем другую функцию setTimeout
+    // setTimeout(() => {
+    //   setModifiedElementId(null); // Возвращаем modifiedElementId к состоянию по умолчанию
+    // }, SHORT_DELAY_IN_MS + 2000);
   };
 
   const handleAddToTail = () => {
