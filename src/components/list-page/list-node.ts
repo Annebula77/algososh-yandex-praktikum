@@ -9,4 +9,5 @@ export class ListNode<T> {
     this.id = nanoid();
     this.next = next;
   }
+
 }

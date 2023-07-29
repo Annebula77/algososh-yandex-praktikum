@@ -22,7 +22,6 @@ export const Circle: React.FC<CircleProps> = ({
   extraClass = "",
   isSmall,
 }) => {
-  console.log(`Circle component re-rendered. Current state: ${state}`);
   return (
     <div className={`${styles.content} ${extraClass}`}>
       <div

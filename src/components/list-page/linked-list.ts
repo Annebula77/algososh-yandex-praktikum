@@ -1,5 +1,6 @@
 import { ListNode } from "./list-node";
 import { LinkedArrItem } from "./list-page";
+import { ElementStates } from "../../types/element-states";
 
 
 export class LinkedList<T extends LinkedArrItem> {
@@ -138,6 +139,39 @@ export class LinkedList<T extends LinkedArrItem> {
 
     return length;
   }
+
+  clearNodeValue(index: number) {
+    const node = this.getNodeAtIndex(index);
+    if (node) {
+      node.value.value = '';
+    }
+  }
+
+  getNodeAtIndex(index: number): ListNode<T> | null {
+    if (!this.head || index < 0) {
+      return null;
+    }
+
+    let node = this.head;
+    for (let i = 0; i < index && node; i++) {
+      if (node.next) {
+        node = node.next;
+      } else {
+        return null;
+      }
+    }
+    return node;
+  }
+
+  changeState(index: number, state: ElementStates) {
+    const node = this.getNodeAtIndex(index);
+    if (node) {
+      node.value.state = state; // теперь прямо обращаемся к полю state
+    }
+  }
+
+
+
 
   //чтение массива 
 
