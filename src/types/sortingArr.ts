@@ -1,3 +1,3 @@
 import { ElementStates } from "./element-states";
 
-export type ArrayElementType = { value: number, state: ElementStates };
+export type ArrayElement = { value: number, state: ElementStates };

@@ -5,25 +5,25 @@ import { Input } from "../ui/input/input";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { SHORT_DELAY_IN_MS } from "../../constants/delays";
+import { calculateFibonacci } from "./utils";
 
 
 export const FibonacciPage: React.FC = () => {
+
   const [number, setNumber] = useState(0);
   const [fibonacciSequence, setFibonacciSequence] = useState<number[]>([]);
   const [displayedIndexes, setDisplayedIndexes] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [timeoutId, setTimeoutId] = useState<number | undefined>(undefined);
 
-  const calculateFibonacci = async (n: number) => {
-    const sequence = [1, 1];
-    while (sequence.length <= n) {
-      const nextNumber = sequence[sequence.length - 1] + sequence[sequence.length - 2];
-      sequence.push(nextNumber);
-    }
-    return sequence;
-  };
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
     setNumber(value);
+  };
+
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    handleClick();
   };
 
   const handleClick = async () => {
@@ -39,10 +39,11 @@ export const FibonacciPage: React.FC = () => {
 
   const displayNumbers = (index: number, total: number) => {
     if (index < total) {
-      setTimeout(() => {
+      const id = window.setTimeout(() => {  // сохранение ID таймера
         setDisplayedIndexes((prev) => [...prev, index]);
         displayNumbers(index + 1, total);
       }, SHORT_DELAY_IN_MS);
+      setTimeoutId(id);  // обновление состояния с новым ID
     } else {
       setIsLoading(false);
     }
@@ -52,11 +53,16 @@ export const FibonacciPage: React.FC = () => {
     if (fibonacciSequence.length > 0) {
       displayNumbers(0, fibonacciSequence.length);
     }
-  }, [fibonacciSequence]);
+    return () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [fibonacciSequence, timeoutId]);
 
   return (
     <SolutionLayout title="Последовательность Фибоначчи">
-      <div className={styles.content}>
+      <form className={styles.content} onSubmit={handleFormSubmit}>
         <Input
           extraClass={styles.input__extra}
           max={19}
@@ -66,11 +72,12 @@ export const FibonacciPage: React.FC = () => {
         <Button
           text="Рассчитать"
           extraClass={styles.button__extra}
+          type="submit"
           onClick={handleClick}
           isLoader={isLoading}
           disabled={isLoading}
         />
-      </div>
+      </form>
       <p className={styles.text}>Максимальное число — 19</p>
       <div className={styles.circle__container}>
         {fibonacciSequence.map((num, index) => (
