@@ -59,7 +59,18 @@ export const ListPage: React.FC = () => {
   };
 
   const handleIndexChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIndexValue(event.target.value);
+    const inputValue = event.target.value;
+    if (inputValue === '') {
+      setIndexValue('');
+      return;
+    }
+
+    const newValue = parseInt(inputValue, 10);
+    if (newValue >= 0 && newValue <= data.array.length - 1) {
+      setIndexValue(String(newValue));
+    } else {
+      alert("Значение индекса не соответствует длине списка");
+    }
   };
 
   const listArray = React.useRef(new LinkedList(initialArray));
@@ -326,7 +337,7 @@ export const ListPage: React.FC = () => {
               maxLength={4}
               placeholder="Введите индекс"
               min={0}
-              max={listArray.current.getLength() - 1}
+              type="number"
               value={indexValue}
               onChange={handleIndexChange}
             />

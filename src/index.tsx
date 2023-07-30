@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
+import styles from "./index.module.css";
 import "./fonts/fonts.css";
 import "./components/ui/common.css";
 import "./components/ui/box.css";
