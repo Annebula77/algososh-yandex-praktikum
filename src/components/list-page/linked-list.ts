@@ -1,9 +1,9 @@
 import { ListNode } from "./list-node";
-import { LinkedArrItem } from "./list-page";
+import { LinkedArrElement } from "../../types/list";
 import { ElementStates } from "../../types/element-states";
 
 
-export class LinkedList<T extends LinkedArrItem> {
+export class LinkedList<T extends LinkedArrElement> {
   head: ListNode<T> | null = null;
   tail: ListNode<T> | null = null;
 
@@ -57,6 +57,7 @@ export class LinkedList<T extends LinkedArrItem> {
     this.tail = currentNode;
     return removedValue;
   }
+
   //добавление всех узлов в массив
   toArray() {
     let arr: ListNode<T>[] = [];
@@ -94,7 +95,7 @@ export class LinkedList<T extends LinkedArrItem> {
     }
   }
 
-  removeAtIndex(index: number): LinkedArrItem | null {
+  removeAtIndex(index: number): LinkedArrElement | null {
     // Специальные случаи: пустой список или удаление из начала
     if (index === 0 || !this.head) {
       const removedHeadValue = this.head ? this.head.value : null;
@@ -105,7 +106,7 @@ export class LinkedList<T extends LinkedArrItem> {
     // Инициализация счетчика и начального узла
     let i = 0;
     let node = this.head;
-    let removedValue: LinkedArrItem | null = null;
+    let removedValue: LinkedArrElement | null = null;
 
     // Перемещение к нужной позиции
     while (i < index - 1 && node.next) {
@@ -115,7 +116,7 @@ export class LinkedList<T extends LinkedArrItem> {
 
     // Удаление узла
     if (node.next) {
-      removedValue = node.next.value; // Теперь это LinkedArrItem, а не T
+      removedValue = node.next.value;
       node.next = node.next.next;
     }
 
@@ -166,21 +167,17 @@ export class LinkedList<T extends LinkedArrItem> {
   changeState(index: number, state: ElementStates) {
     const node = this.getNodeAtIndex(index);
     if (node) {
-      node.value.state = state; // теперь прямо обращаемся к полю state
+      node.value.state = state;
     }
   }
-
-
-
 
   //чтение массива 
 
   getData() {
-    const array = this.toArray();  // заменили this.array на вызов метода toArray()
+    const array = this.toArray();
     const tail = this.tail;
     const head = this.head;
     return { array, tail, head };
   }
-
 
 }

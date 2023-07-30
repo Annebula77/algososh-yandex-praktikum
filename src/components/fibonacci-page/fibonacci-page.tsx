@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
+import styles from './fibonacci.module.css';
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import { Input } from "../ui/input/input";
 import { Button } from "../ui/button/button";
-import styles from './fibonacci.module.css';
 import { Circle } from "../ui/circle/circle";
 import { SHORT_DELAY_IN_MS } from "../../constants/delays";
 

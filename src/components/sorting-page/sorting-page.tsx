@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
+import styles from "./sorting.module.css";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import { RadioInput } from "../ui/radio-input/radio-input";
 import { Button } from "../ui/button/button";
-import styles from "./sorting.module.css";
 import { Direction } from "../../types/direction";
 import { DELAY_IN_MS } from "../../constants/delays";
 import { ElementStates } from "../../types/element-states";

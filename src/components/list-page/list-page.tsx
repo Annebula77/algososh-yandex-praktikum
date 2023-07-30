@@ -8,65 +8,50 @@ import { Circle } from "../ui/circle/circle";
 import { ElementStates } from "../../types/element-states";
 import { SHORT_DELAY_IN_MS } from "../../constants/delays";
 import { LinkedList } from "./linked-list";
+import { RemovingNode } from "../../types/list";
+import { initialArray } from "../../constants/list-consts";
 import { ListNode } from "./list-node";
 import { nanoid } from 'nanoid';
 
-export type LinkedArrItem = { value: string; state: ElementStates }; //change name
-
-export const defaultArray: LinkedArrItem[] = [
-  { value: '0', state: ElementStates.Default },
-  { value: '34', state: ElementStates.Default },
-  { value: '8', state: ElementStates.Default },
-  { value: '1', state: ElementStates.Default }
-] //change name
-
-type RemovingNode = { id: string, value: string } | null;
-
-
 export const ListPage: React.FC = () => {
 
+  const [inputValue, setInputValue] = useState("");
+  const [indexValue, setIndexValue] = useState("");
 
   const [onAddLoading, setOnAddLoading] = useState({
     index: false,
     tail: false,
     head: false,
   });
-
   const [onDeleteLoading, setOnDeleteLoading] = useState({
     index: false,
     tail: false,
     head: false,
   });
 
-
-
-  const [addCircle, setAddCircle] = useState({
+  const [newCircle, setNewCircle] = useState({
     index: -1,
     value: "",
     state: ElementStates.Default,
   });
-  const [deleteCircle, setDeleteCircle] = useState({
+  const [deletingCircle, setDeletingCircle] = useState({
     index: -1,
     value: "",
     state: ElementStates.Default,
   });
 
-  const [, reset] = useState({});
-
-
-  const [inputValue, setInputValue] = useState("");
-  const [indexValue, setIndexValue] = useState(""); // новое состояние для индекса
   const [isAddingToTail, setIsAddingToTail] = useState(false);
   const [isAddingToHead, setIsAddingToHead] = useState(false);
+
   const [removingHead, setRemovingHead] = useState<RemovingNode>(null);
   const [removingTail, setRemovingTail] = useState<RemovingNode>(null);
-  const [removingByIndex, setRemovingByIndex] = useState<RemovingNode>(null);
+
   const [insertionIndex, setInsertionIndex] = useState<number | null>(null);
+
+  const [removingByIndex, setRemovingByIndex] = useState<RemovingNode>(null);
   const [delitionIndex, setDelitionIndex] = useState<number | null>(null);
 
-
-
-
+  const [, reset] = useState({});
 
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,64 +62,80 @@ export const ListPage: React.FC = () => {
     setIndexValue(event.target.value);
   };
 
-  const listArray = React.useRef(new LinkedList(defaultArray));
-  const data = listArray.current.getData(); //change name
+  const listArray = React.useRef(new LinkedList(initialArray));
+  const data = listArray.current.getData();
 
   const pause = (duration: number) => new Promise(resolve => setTimeout(resolve, duration));
 
+
   const handleAddToHead = async () => {
+
+    if (listArray.current.getLength() >= 10) {
+      alert("Максимальная длина списка достигнута");
+      return;
+    }
+
     setOnAddLoading({ ...onAddLoading, head: true });
     setIsAddingToHead(true);
 
-    setAddCircle({
+    setNewCircle({
       index: 0,
       value: inputValue,
       state: ElementStates.Changing,
     });
 
     await pause(SHORT_DELAY_IN_MS);
+
     setIsAddingToHead(false);
     const newItem = new ListNode(inputValue);
     const newItemForList = { value: newItem.value, state: ElementStates.Modified };
     listArray.current.addToHead(newItemForList);
-    setAddCircle({ ...addCircle, index: -1 });
+    setNewCircle({ ...newCircle, index: -1 });
 
     await pause(SHORT_DELAY_IN_MS);
+
     listArray.current.changeState(0, ElementStates.Default);
     setInputValue("");
     setOnAddLoading({ ...onAddLoading, head: false });
-
   };
 
 
+
   const handleAddToTail = async () => {
+
+    if (listArray.current.getLength() >= 10) {
+      alert("Максимальная длина списка достигнута");
+      return;
+    }
     setOnAddLoading({ ...onAddLoading, tail: true });
     setIsAddingToTail(true);
 
     const lastIndex = listArray.current.getLength();
 
-    setAddCircle({
-      index: lastIndex, // Предполагая, что индекс последнего элемента равен длине списка
+    setNewCircle({
+      index: lastIndex,
       value: inputValue,
       state: ElementStates.Changing,
     });
 
     await pause(SHORT_DELAY_IN_MS);
+
     setIsAddingToTail(false);
     const newItem = new ListNode(inputValue);
-    const newItemForList = { value: newItem.value, state: ElementStates.Modified }; // Замените ElementStates.Changing на соответствующий статус
+    const newItemForList = { value: newItem.value, state: ElementStates.Modified };
     listArray.current.addToTail(newItemForList);
-    setAddCircle({ ...addCircle, index: -1 });
+    setNewCircle({ ...newCircle, index: -1 });
 
     await pause(SHORT_DELAY_IN_MS);
+
     listArray.current.changeState(lastIndex, ElementStates.Default);
     setInputValue("");
     setOnAddLoading({ ...onAddLoading, tail: false });
-
   };
 
 
   const handleRemoveFromHead = async () => {
+
     setOnDeleteLoading({ ...onDeleteLoading, head: true });
     const headNod = data.head;
 
@@ -146,7 +147,7 @@ export const ListPage: React.FC = () => {
       listArray.current.changeState(0, ElementStates.Default);
       listArray.current.clearNodeValue(Number(indexValue));
 
-      setDeleteCircle({
+      setDeletingCircle({
         index: 0,
         value: headNod.value.value,
         state: ElementStates.Default,
@@ -160,12 +161,13 @@ export const ListPage: React.FC = () => {
 
       setRemovingHead(null);
       setOnDeleteLoading({ ...onDeleteLoading, head: false });
-      setDeleteCircle({ ...deleteCircle, index: -1 });
+      setDeletingCircle({ ...deletingCircle, index: -1 });
     }
   };
 
   const handleRemoveFromTail = async () => {
     setOnDeleteLoading({ ...onDeleteLoading, tail: true });
+
     const tailNod = data.tail;
     const lastIndex = listArray.current.getLength() - 1;
 
@@ -177,20 +179,20 @@ export const ListPage: React.FC = () => {
       listArray.current.changeState(lastIndex, ElementStates.Default);
       listArray.current.clearNodeValue(lastIndex);
 
-      setDeleteCircle({
+      setDeletingCircle({
         index: lastIndex,
-        value: tailNod.value.value, // Извлекаем значение из объекта
+        value: tailNod.value.value,
         state: ElementStates.Default,
       });
 
       await pause(SHORT_DELAY_IN_MS);
 
-      listArray.current.removeTail(); // Теперь это объект типа LinkedArrItem
+      listArray.current.removeTail();
 
       await pause(SHORT_DELAY_IN_MS);
-      setOnDeleteLoading({ ...onDeleteLoading, tail: false });
 
-      setDeleteCircle({ ...deleteCircle, index: -1 });
+      setOnDeleteLoading({ ...onDeleteLoading, tail: false });
+      setDeletingCircle({ ...deletingCircle, index: -1 });
       setRemovingTail(null);
     }
   };
@@ -198,32 +200,37 @@ export const ListPage: React.FC = () => {
   const handleInsertAtIndex = async () => {
     setOnAddLoading({ ...onAddLoading, index: true });
 
+    if (listArray.current.getLength() >= 10) {
+      alert("Максимальная длина списка достигнута");
+      return;
+    }
+
     for (let i = 0; i <= Number(indexValue) + 1; i++) {
       setInsertionIndex(i);
 
-      setAddCircle({
+      setNewCircle({
         index: i,
         value: inputValue,
         state: ElementStates.Changing,
       });
 
       if (i < Number(indexValue)) {
-        // Устанавливаем состояние текущего элемента в ElementStates.Changing
         listArray.current.changeState(i, ElementStates.Changing);
       } else if (i === Number(indexValue)) {
-        // Меняем состояние всех предыдущих элементов на ElementStates.Default
+
         for (let j = 0; j < i; j++) {
           listArray.current.changeState(j, ElementStates.Default);
         }
 
         await pause(SHORT_DELAY_IN_MS);
+
         const newItem = new ListNode(inputValue);
         const newItemForList = { value: newItem.value, state: ElementStates.Modified };
         listArray.current.insertAtIndex(newItemForList, i);
-        setAddCircle({ ...addCircle, index: -1 });
-
+        setNewCircle({ ...newCircle, index: -1 });
         setInsertionIndex(null);
       } else {
+
         for (let i = 0; i <= Number(indexValue); i++) {
           listArray.current.changeState(i, ElementStates.Default);
         };
@@ -249,9 +256,8 @@ export const ListPage: React.FC = () => {
 
       await pause(SHORT_DELAY_IN_MS);
 
-
       if (i === Number(indexValue) && node !== null) {
-        setDeleteCircle({
+        setDeletingCircle({
           index: i,
           value: '',
           state: ElementStates.Changing,
@@ -273,13 +279,13 @@ export const ListPage: React.FC = () => {
     reset({});
 
     await pause(SHORT_DELAY_IN_MS);
+
     setDelitionIndex(Number(indexValue));
 
     await pause(SHORT_DELAY_IN_MS);
 
     listArray.current.removeAtIndex(Number(indexValue));
-    setDeleteCircle({ ...deleteCircle, index: -1 });
-
+    setDeletingCircle({ ...deletingCircle, index: -1 });
 
     for (let i = 0; i <= Number(indexValue); i++) {
 
@@ -321,8 +327,8 @@ export const ListPage: React.FC = () => {
               placeholder="Введите индекс"
               min={0}
               max={listArray.current.getLength() - 1}
-              value={indexValue} // связываем input с состоянием indexValue
-              onChange={handleIndexChange} // связываем input с обработчиком handleIndexChange
+              value={indexValue}
+              onChange={handleIndexChange}
             />
           </div>
           <div className={styles.boxes}>
@@ -340,8 +346,8 @@ export const ListPage: React.FC = () => {
             showArrow={index !== listArray.current.getLength() - 1}
             state={node.value.state}
             head={
-              (index === 0 && isAddingToHead && !isAddingToTail) || // For adding to the head
-                (index === listArray.current.getLength() - 1 && isAddingToTail && !isAddingToHead) || // For adding to the tail
+              (index === 0 && isAddingToHead && !isAddingToTail) ||
+                (index === listArray.current.getLength() - 1 && isAddingToTail && !isAddingToHead) ||
                 (index === insertionIndex && !isAddingToHead && !isAddingToTail)
                 ? (
                   <Circle
@@ -351,13 +357,13 @@ export const ListPage: React.FC = () => {
                     isSmall={true}
                   />
                 )
-                : index === 0 && !(isAddingToHead) // For showing "head" on the first element during the first render
+                : index === 0 && !(isAddingToHead)
                   ? "head"
                   : undefined
             }
 
             tail={
-              // Если удаляем голову и текущий элемент станет новой головой
+
               (index === 0 && onDeleteLoading.head)
                 ? (
                   <Circle

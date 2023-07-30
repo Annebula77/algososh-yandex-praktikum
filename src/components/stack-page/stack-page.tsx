@@ -1,10 +1,11 @@
 import React from "react";
-import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from './stack.module.css';
+import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import { Input } from "../ui/input/input";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
-import { ElementStates, StackArr } from "../../types/element-states";
+import { ElementStates } from "../../types/element-states";
+import { StackArr } from "../../types/stackArr";
 import { SHORT_DELAY_IN_MS } from "../../constants/delays";
 
 interface State {

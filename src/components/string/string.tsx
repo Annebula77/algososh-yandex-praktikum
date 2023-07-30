@@ -1,8 +1,8 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
+import styles from './string.module.css';
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import { Input } from "../ui/input/input";
 import { Button } from "../ui/button/button";
-import styles from './string.module.css';
 import { Circle } from "../ui/circle/circle";
 import { ElementStates } from "../../types/element-states";
 import { DELAY_IN_MS } from "../../constants/delays";
