@@ -1,0 +1,47 @@
+.input__extra {
+  box-sizing: border-box;
+  max-width: 377px;
+  max-height: 86px;
+  margin: 0;
+  padding: 0;
+
+}
+
+.button__extra {
+  box-sizing: border-box;
+  max-width: 178px;
+  max-height: 60px;
+  margin: 0;
+  padding: 0;
+}
+
+.content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  box-sizing: border-box;
+  padding: 48px 0 0 0;
+  margin: auto;
+  gap: 12px;
+}
+
+.text {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.57;
+  margin-left: -310px;
+  margin-bottom: 0;
+  margin-top: 0;
+  padding: 0;
+}
+
+.circle__container {
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  margin: 48px auto;
+  width: 66%;
+  justify-content: center;
+  gap: 76px 16px;
+}
