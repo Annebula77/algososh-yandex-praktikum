@@ -6,7 +6,7 @@ import { Button } from "../ui/button/button";
 import { CircleWithArrow } from "../ui/circle-with-arrow/circle-with-arrow";
 import { Circle } from "../ui/circle/circle";
 import { ElementStates } from "../../types/element-states";
-import { SHORT_DELAY_IN_MS } from "../../constants/delays";
+import { SHORT_DELAY_IN_MS, pause } from "../../constants/delays";
 import { LinkedList } from "./linked-list";
 import { RemovingNode } from "../../types/list";
 import { initialArray } from "../../constants/list-consts";
@@ -75,8 +75,6 @@ export const ListPage: React.FC = () => {
 
   const listArray = React.useRef(new LinkedList(initialArray));
   const data = listArray.current.getData();
-
-  const pause = (duration: number) => new Promise(resolve => setTimeout(resolve, duration));
 
 
   const handleAddToHead = async () => {

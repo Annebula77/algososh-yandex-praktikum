@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from './stack.module.css';
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import { Input } from "../ui/input/input";
@@ -6,105 +6,101 @@ import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { ElementStates } from "../../types/element-states";
 import { StackArr } from "../../types/stackArr";
-import { SHORT_DELAY_IN_MS } from "../../constants/delays";
+import { SHORT_DELAY_IN_MS, pause } from "../../constants/delays";
+import { Stack } from "./stack-class";
 
-interface State {
-  isLoading: boolean;
-  symbol: string;
-  stackArray: StackArr[];
-}
 
-class StackPage extends React.Component<{}, State> {
-  state: State = {
-    isLoading: false,
-    symbol: '',
-    stackArray: []
+
+export const StackPage: React.FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [symbol, setSymbol] = useState<string>("");
+  const [stackArray, setStackArray] = useState<StackArr[]>([]);
+  const stack = new Stack();
+
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSymbol(event.target.value);
   };
-  handleAdd = () => {
-    if (this.state.symbol !== '') {
-      this.setState({ isLoading: true });
-      setTimeout(() => {
-        this.setState(prevState => ({
-          stackArray: [...prevState.stackArray, { value: prevState.symbol, type: ElementStates.Changing }],
-          symbol: '',
-          isLoading: false
-        }));
 
-        setTimeout(() => {
-          this.setState(prevState => {
-            let newState = [...prevState.stackArray];
-            newState[newState.length - 1].type = ElementStates.Default;
-            return { stackArray: newState };
-          });
-        }, SHORT_DELAY_IN_MS);
-      }, SHORT_DELAY_IN_MS);
+  const handleAdd = async () => {
+    if (symbol !== "" && !isLoading) {
+      setIsLoading(true);
+
+      // Сначала создаем элемент со статусом Changing и добавляем его в локальный стейт
+      const elementToAdd = { value: symbol, type: ElementStates.Changing };
+      setStackArray(prevState => [...prevState, elementToAdd]);
+
+      // Добавляем значение в класс Stack
+      stack.add(symbol);
+
+      // Пауза перед сменой статуса
+      await pause(SHORT_DELAY_IN_MS);
+
+      // Затем обновляем элемент в локальном стейте, меняя его статус на Default
+      setStackArray(prevState => prevState.map((item, i) =>
+        i === prevState.length - 1 ? { ...item, type: ElementStates.Default } : item
+      ));
+
+      setSymbol("");
+      setIsLoading(false);
     }
-  }
+  };
 
-  handleDelete = () => {
-    if (this.state.stackArray.length > 0) {
-      this.setState(prevState => {
-        let newState = [...prevState.stackArray];
-        newState[newState.length - 1].type = ElementStates.Changing;
-        return { stackArray: newState, isLoading: true };
-      });
 
-      setTimeout(() => {
-        this.setState(prevState => {
-          let newState = [...prevState.stackArray];
-          newState.pop();
-          return { stackArray: newState, isLoading: false };
-        });
-      }, SHORT_DELAY_IN_MS);
+  const handleDelete = async () => {
+    if (stackArray.length > 0) {
+      setIsLoading(true);
+      const index = stackArray.length - 1;
+      let newArr = [...stackArray];
+      newArr[index].type = ElementStates.Changing;
+      setStackArray(newArr);
+      await pause(SHORT_DELAY_IN_MS);
+      stack.delete();
+      newArr.pop();
+      setStackArray(newArr);
+      setIsLoading(false);
     }
-  }
+  };
 
-  handleClear = () => {
-    this.setState({ isLoading: true });
-    setTimeout(() => {
-      this.setState({ stackArray: [], isLoading: false });
-    }, SHORT_DELAY_IN_MS);
-  }
-
-  handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ symbol: event.target.value });
-  }
-
-  render() {
-    return (
-      <SolutionLayout title="Стек">
-        <div className={styles.content}>
-          <div className={styles.input}>
-            <Input
-              extraClass={styles.input__extra}
-              maxLength={4}
-              onChange={this.handleInputChange}
-              value={this.state.symbol}
-              disabled={this.state.isLoading}
-            />
-            <p className={styles.text}>Максимум — 4 символа</p>
-          </div>
-          <div className={styles.boxes}>
-            <Button text="Добавить" onClick={this.handleAdd} disabled={this.state.isLoading} />
-            <Button text="Удалить" onClick={this.handleDelete} disabled={this.state.isLoading} />
-          </div>
-          <Button text="Очистить" onClick={this.handleClear} disabled={this.state.isLoading} />
+  const handleClear = async () => {
+    setIsLoading(true);
+    await stack.clear();
+    setStackArray([]);
+    setIsLoading(false);
+  };
+  return (
+    <SolutionLayout title="Стек">
+      <div className={styles.content}>
+        <div className={styles.input}>
+          <Input
+            extraClass={styles.input__extra}
+            maxLength={4}
+            onChange={handleInputChange}
+            value={symbol}
+            disabled={isLoading}
+          />
+          <p className={styles.text}>Максимум — 4 символа</p>
         </div>
-        <div className={styles.circle__container}>
-          {this.state.stackArray.map((item, index) =>
-            <Circle
-              key={index}
-              letter={item.value?.toString() || ''}
-              index={index}
-              head={index === this.state.stackArray.length - 1 ? 'top' : null}
-              state={item.type}
-            />
-          )}
+        <div className={styles.boxes}>
+          <Button text="Добавить" onClick={handleAdd} disabled={isLoading} />
+          <Button text="Удалить" onClick={handleDelete} disabled={symbol.trim() !== ''} />
         </div>
+        <Button text="Очистить" onClick={handleClear} disabled={isLoading} />
+      </div>
+      <div className={styles.circle__container}>
+        {stackArray.map((item, index) =>
+          <Circle
+            key={index}
+            letter={item.value?.toString() || ''}
+            index={index}
+            head={index === stackArray.length - 1 ? 'top' : null}
+            state={item.type}
+          />
+        )}
+      </div>
 
-      </SolutionLayout>
-    );
-  }
+    </SolutionLayout>
+  );
 };
 
-export { StackPage };
+

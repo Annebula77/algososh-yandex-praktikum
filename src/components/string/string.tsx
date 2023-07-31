@@ -1,32 +1,13 @@
-import React, { useState, ChangeEvent, useEffect } from "react";
+import React, { useState, ChangeEvent, useEffect, FormEvent } from "react";
 import styles from './string.module.css';
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import { Input } from "../ui/input/input";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
-import { ElementStates } from "../../types/element-states";
-import { DELAY_IN_MS } from "../../constants/delays";
+import { getReversingStringSteps, getLetterState } from "./utils";
+import { DELAY_IN_MS, SHORT_DELAY_IN_MS } from "../../constants/delays";
 
-const animateSortReverse = async (word: string, setLetters: (letters: string[]) => void, setHighlightedIndexes: (indexes: number[]) => void, setChangingIndexes: (indexes: number[]) => void) => {
-  let lettersArray = word.split("");
-  let highlightedIndexes = [];
 
-  for (let i = 0; i < Math.floor(lettersArray.length / 2); i++) {
-    await new Promise((resolve) => setTimeout(resolve, DELAY_IN_MS));
-    setChangingIndexes([i, lettersArray.length - 1 - i]);
-
-    await new Promise((resolve) => setTimeout(resolve, DELAY_IN_MS));
-    setChangingIndexes([]);
-    const temp = lettersArray[i];
-    lettersArray[i] = lettersArray[lettersArray.length - 1 - i];
-    lettersArray[lettersArray.length - 1 - i] = temp;
-    setLetters([...lettersArray]);
-    highlightedIndexes.push(i, lettersArray.length - 1 - i);
-    setHighlightedIndexes([...highlightedIndexes]);
-  }
-
-  setHighlightedIndexes(Array.from({ length: lettersArray.length }, (_, i) => i));
-};
 
 export const StringComponent: React.FC = () => {
 
@@ -37,7 +18,7 @@ export const StringComponent: React.FC = () => {
   const [isSorting, setIsSorting] = useState<boolean>(false);
   const [startAnimation, setStartAnimation] = useState<boolean>(false);
   const [isAnimationDone, setIsAnimationDone] = useState<boolean>(false);
-
+  const [timeouts, setTimeouts] = useState<NodeJS.Timeout[]>([]);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (isAnimationDone) {
@@ -52,11 +33,36 @@ export const StringComponent: React.FC = () => {
   const handleButtonClick = () => {
     setIsSorting(true);
     setStartAnimation(true);
-    animateSortReverse(word, setLetters, setHighlightedIndexes, setChangingIndexes).then(() => {
-      setIsSorting(false);
-      setIsAnimationDone(true);
-    });
+
+    setTimeout(() => {
+      const reversedSteps = getReversingStringSteps(word);
+      reversedSteps.forEach((step, index) => {
+        const timeoutChanging = setTimeout(() => {
+          setChangingIndexes([index, word.length - 1 - index]);
+          const timeoutModified = setTimeout(() => {
+            setLetters(step);
+            setChangingIndexes([]);
+            setHighlightedIndexes(prevIndexes => [...prevIndexes, index, word.length - 1 - index]);
+          }, SHORT_DELAY_IN_MS);
+          setTimeouts(prevTimeouts => [...prevTimeouts, timeoutModified]);
+        }, index * DELAY_IN_MS);
+        setTimeouts(prevTimeouts => [...prevTimeouts, timeoutChanging]);
+      });
+
+      setTimeout(() => {
+        setIsSorting(false);
+        setIsAnimationDone(true);
+        setHighlightedIndexes(Array.from({ length: word.length }, (_, i) => i));
+      }, reversedSteps.length * DELAY_IN_MS);
+    }, SHORT_DELAY_IN_MS);
   };
+
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    handleButtonClick();
+  };
+
+
   useEffect(() => {
     if (startAnimation) {
       setLetters(word.split(""));
@@ -65,28 +71,31 @@ export const StringComponent: React.FC = () => {
     }
   }, [startAnimation]);
 
+  useEffect(() => {
+    if (!startAnimation) {
+      timeouts.forEach(timeout => clearTimeout(timeout));
+      setTimeouts([]);
+    }
+  }, [startAnimation]);
+
   return (
     <SolutionLayout title="Строка">
-      <div className={styles.content}>
+      <form onSubmit={handleSubmit} className={styles.content}>
         <Input extraClass={styles.input__extra} maxLength={11} onChange={handleInputChange} value={word} />
-        <Button text="Развернуть" extraClass={styles.button__extra} onClick={handleButtonClick} isLoader={isSorting} disabled={isSorting} />
-      </div>
+        <Button text="Развернуть" extraClass={styles.button__extra} type="submit" isLoader={isSorting} disabled={isSorting} />
+      </form>
       <p className={styles.text}>Максимум — 11 символов</p>
       <div className={styles.circle__container}>
         {startAnimation && letters.map((letter, index) => (
           <Circle
             key={index}
             letter={letter}
-            state={
-              highlightedIndexes.includes(index)
-                ? ElementStates.Modified
-                : changingIndexes.includes(index)
-                  ? ElementStates.Changing
-                  : ElementStates.Default
-            }
+            state={getLetterState(index, highlightedIndexes, changingIndexes)}
           />
         ))}
       </div>
     </SolutionLayout>
   );
 };
+
+
