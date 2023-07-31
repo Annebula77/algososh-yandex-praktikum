@@ -1,136 +1,105 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import styles from './queue.module.css';
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import { Input } from "../ui/input/input";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { ElementStates } from "../../types/element-states";
-import { StackArr } from "../../types/stackArr";
+import { Queue } from "./queue-class";
 import { SHORT_DELAY_IN_MS } from "../../constants/delays";
+import { StackArr } from "../../types/stackArr";
 
-interface State {
-  queueArray: StackArr[];
-  symbol: string | null;
-  isLoading: boolean;
-}
 
-class QueuePage extends React.Component<{}, State> {
-  emptyElement: StackArr = { value: null, type: ElementStates.Default };
+export const QueuePage: React.FC = () => {
+  const queue = useRef(new Queue());
+  const [queueArray, setQueueArray] = useState<StackArr[]>(new Array(7).fill({ value: null, type: ElementStates.Default }));
+  const [symbol, setSymbol] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  state: State = {
-    queueArray: new Array(7).fill(this.emptyElement),
-    symbol: null,
-    isLoading: false,
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSymbol(e.target.value);
   };
 
-  handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ symbol: e.target.value });
-  };
-
-  handleAdd = () => {
-    const lastFilledIndex = this.state.queueArray.reduce(
-      (maxIndex, item, i) => (item.value !== null ? i : maxIndex),
-      -1
-    );
-    if (
-      this.state.symbol !== "" &&
-      this.state.symbol !== null &&
-      lastFilledIndex < this.state.queueArray.length - 1
-    ) {
-      this.setState({ isLoading: true });
+  const handleAdd = () => {
+    setIsLoading(true);
+    const index = queue.current.add(symbol);
+    if (index !== null) {
       setTimeout(() => {
-        this.setState((prevState) => {
-          let newState = [...prevState.queueArray];
-          newState[lastFilledIndex + 1] = {
-            value: this.state.symbol,
-            type: ElementStates.Changing,
-          };
-          return { queueArray: newState, symbol: null, isLoading: false };
+        setQueueArray((prevState) => {
+          let newState = [...prevState];
+          newState[index] = { value: symbol, type: ElementStates.Changing };
+          return newState;
         });
         setTimeout(() => {
-          this.setState((prevState) => {
-            let newState = [...prevState.queueArray];
-            newState[lastFilledIndex + 1].type = ElementStates.Default;
-            return { queueArray: newState };
+          setQueueArray((prevState) => {
+            let newState = [...prevState];
+            newState[index].type = ElementStates.Default;
+            return newState;
           });
+          setSymbol('');
+          setIsLoading(false);
         }, SHORT_DELAY_IN_MS);
       }, SHORT_DELAY_IN_MS);
     }
   };
 
-  handleDelete = () => {
-    const firstFilledIndex = this.state.queueArray.findIndex(
-      (item) => item.value !== null
-    );
-    if (firstFilledIndex !== -1) {
-      this.setState({ isLoading: true });
-      this.setState((prevState) => {
-        let newState = [...prevState.queueArray];
-        newState[firstFilledIndex] = {
-          ...newState[firstFilledIndex],
-          type: ElementStates.Changing,
-        };
-        return { queueArray: newState };
-      });
+  const handleDelete = () => {
+    setIsLoading(true);
+    const index = queue.current.delete();
+    if (index !== null) {
       setTimeout(() => {
-        this.setState((prevState) => {
-          let newState = [...prevState.queueArray];
-          newState[firstFilledIndex] = this.emptyElement;
-          return { queueArray: newState, isLoading: false };
+        setQueueArray((prevState) => {
+          let newState = [...prevState];
+          newState[index] = { value: null, type: ElementStates.Default };
+          return newState;
         });
+        setIsLoading(false);
       }, SHORT_DELAY_IN_MS);
     }
   };
 
-  handleClear = () => {
-    this.setState({ isLoading: true });
-    this.setState({
-      queueArray: new Array(7).fill(this.emptyElement),
-      isLoading: false,
-    });
+  const handleClear = () => {
+    setIsLoading(true);
+    queue.current.clear();
+    setTimeout(() => {
+      setQueueArray(new Array(7).fill({ value: null, type: ElementStates.Default }));
+      setIsLoading(false);
+    }, SHORT_DELAY_IN_MS);
   };
 
-  render() {
-    return (
-      <SolutionLayout title="Очередь">
-        <div className={styles.content}>
-          <div className={styles.input}>
-            <Input
-              extraClass={styles.input__extra}
-              maxLength={4}
-              onChange={this.handleInputChange}
-              value={this.state.symbol || ''}
-              disabled={this.state.isLoading}
-            />
-            <p className={styles.text}>Максимум — 4 символа</p>
-          </div>
-          <div className={styles.boxes}>
-            <Button text="Добавить" onClick={this.handleAdd} disabled={this.state.isLoading} />
-            <Button text="Удалить" onClick={this.handleDelete} disabled={this.state.isLoading} />
-          </div>
-          <Button text="Очистить" onClick={this.handleClear} disabled={this.state.isLoading} />
+  return (
+    <SolutionLayout title="Очередь">
+      <div className={styles.content}>
+        <div className={styles.input}>
+          <Input
+            extraClass={styles.input__extra}
+            maxLength={4}
+            onChange={handleInputChange}
+            value={symbol || ''}
+            disabled={isLoading}
+          />
+          <p className={styles.text}>Максимум — 4 символа</p>
         </div>
-        <div className={styles.circle__container}>
-          {this.state.queueArray.map((item, index) =>
-            <Circle
-              key={index}
-              letter={item.value?.toString() || ''}
-              index={index}
-              head={index === this.state.queueArray.findIndex(item => item.value !== null) ? 'head' : null}
-              tail={index === this.state.queueArray.reduce((maxIndex, item, i) => item.value !== null ? i : maxIndex, -1) ? 'tail' : null}
-              state={item.type}
-            />
-          )}
+        <div className={styles.boxes}>
+          <Button text="Добавить" onClick={handleAdd} disabled={isLoading} />
+          <Button text="Удалить" onClick={handleDelete} disabled={isLoading} />
         </div>
+        <Button text="Очистить" onClick={handleClear} disabled={isLoading} />
+      </div>
+      <div className={styles.circle__container}>
+        {queueArray.map((item, index) =>
+          <Circle
+            key={index}
+            letter={item.value?.toString() || ''}
+            index={index}
+            head={index === queueArray.findIndex(item => item.value !== null) ? 'head' : null}
+            tail={index === queueArray.reduce((maxIndex, item, i) => item.value !== null ? i : maxIndex, -1) ? 'tail' : null}
+            state={item.type}
+          />
+        )}
+      </div>
 
-      </SolutionLayout>
-    );
-  }
-}
-
-export { QueuePage };
-
-
-
-
-
+    </SolutionLayout>
+  );
+};

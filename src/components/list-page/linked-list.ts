@@ -1,9 +1,10 @@
 import { ListNode } from "./list-node";
 import { LinkedArrElement } from "../../types/list";
 import { ElementStates } from "../../types/element-states";
+import { ILinkedList } from "../../types/list";
 
 
-export class LinkedList<T extends LinkedArrElement> {
+export class LinkedList<T extends LinkedArrElement> implements ILinkedList<T> {
   head: ListNode<T> | null = null;
   tail: ListNode<T> | null = null;
 
