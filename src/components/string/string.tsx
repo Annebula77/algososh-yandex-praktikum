@@ -81,8 +81,8 @@ export const StringComponent: React.FC = () => {
   return (
     <SolutionLayout title="Строка">
       <form onSubmit={handleSubmit} className={styles.content}>
-        <Input extraClass={styles.input__extra} maxLength={11} onChange={handleInputChange} value={word} />
-        <Button text="Развернуть" extraClass={styles.button__extra} type="submit" isLoader={isSorting} disabled={isSorting} />
+        <Input data-test-id="inputExtra" extraClass={styles.input__extra} maxLength={11} onChange={handleInputChange} value={word} />
+        <Button data-test-id="buttonExtra" text="Развернуть" extraClass={styles.button__extra} type="submit" isLoader={isSorting} disabled={isSorting || !word} />
       </form>
       <p className={styles.text}>Максимум — 11 символов</p>
       <div className={styles.circle__container}>
