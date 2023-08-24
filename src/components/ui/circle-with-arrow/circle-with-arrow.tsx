@@ -29,7 +29,7 @@ export const CircleWithArrow: React.FC<CircleWithArrowProps> = ({
   return (
     <div className={`${styles.container} ${containerClass}`}>
       <Circle {...props} />
-      {showArrow && <div className={styles.arrow}>&gt;</div>}
+      {showArrow && <div className={styles.arrow} data-testid="arrow">&gt;</div>}
     </div>
   );
 };
