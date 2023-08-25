@@ -26,7 +26,6 @@ describe('Queue Page', () => {
       .parent()  // Выбираем родительский элемент
       .should('have.css', 'border-color', state__default);
 
-    // Проверяем курсоры head и tail
     cy.get(cyHead).should('exist');
     cy.get(cyTail).should('exist');
   });

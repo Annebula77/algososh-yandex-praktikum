@@ -34,7 +34,7 @@ export const Circle: React.FC<CircleProps> = ({
       </div>
       <div
         data-test-id="circle"
-        className={`${styles.circle}  ${isSmall ? styles.small : ""} ${styles[state]
+        className={`${styles.circle}  ${isSmall ? `${styles.small} is-small` : ""} ${styles[state]
           }`}
       >
         <p
