@@ -82,12 +82,12 @@ export const QueuePage: React.FC = () => {
           <p className={styles.text}>Максимум — 4 символа</p>
         </div>
         <div className={styles.boxes}>
-          <Button text="Добавить" onClick={handleAdd} disabled={isLoading} />
-          <Button text="Удалить" onClick={handleDelete} disabled={isLoading} />
+          <Button data-test-id="addToQueue" text="Добавить" onClick={handleAdd} disabled={isLoading || !symbol} />
+          <Button data-test-id="removeFromQueue" text="Удалить" onClick={handleDelete} disabled={symbol?.trim() !== ''} />
         </div>
-        <Button text="Очистить" onClick={handleClear} disabled={isLoading} />
+        <Button data-test-id="clearQueue" text="Очистить" onClick={handleClear} disabled={isLoading} />
       </div>
-      <div className={styles.circle__container}>
+      <div data-test-id="queueCircleContainer" className={styles.circle__container}>
         {queueArray.map((item, index) =>
           <Circle
             key={index}

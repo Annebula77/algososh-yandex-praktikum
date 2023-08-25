@@ -1,4 +1,4 @@
-import { SHORT_DELAY_IN_MS, DELAY_IN_MS } from '../../src/constants/delays';
+import { SHORT_DELAY_IN_MS } from '../../src/constants/delays';
 describe('Fibonacci Page', () => {
   const fibonacci = (n: number): number => {
     if (n === 1 || n === 2) return 1;
