@@ -75,7 +75,8 @@ export const FibonacciPage: React.FC = () => {
           type="submit"
           onClick={handleClick}
           isLoader={isLoading}
-          disabled={isLoading}
+          disabled={isLoading || !number}
+          data-test-id="buttonFibonacci"
         />
       </form>
       <p className={styles.text}>Максимальное число — 19</p>
