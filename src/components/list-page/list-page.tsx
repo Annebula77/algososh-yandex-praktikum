@@ -318,14 +318,15 @@ export const ListPage: React.FC = () => {
               extraClass={styles.input__extra}
               maxLength={4}
               onChange={handleInputChange}
+              data-test-id="listSymbolInput"
             />
             <p className={styles.text}>Максимум — 4 символа</p>
           </div>
           <div className={styles.boxes}>
-            <Button text="Добавить в head" extraClass={styles.button__extra_top} onClick={handleAddToHead} isLoader={onAddLoading.head} disabled={inputValue.trim() === '' || indexValue.trim() !== ''} />
-            <Button text="Добавить в tail" extraClass={styles.button__extra_top} onClick={handleAddToTail} isLoader={onAddLoading.tail} disabled={inputValue.trim() === '' || indexValue.trim() !== ''} />
-            <Button text="Удалить из head" extraClass={styles.button__extra_top} onClick={handleRemoveFromHead} isLoader={onDeleteLoading.head} disabled={inputValue.trim() !== '' || indexValue.trim() !== ''} />
-            <Button text="Удалить из tail" extraClass={styles.button__extra_top} onClick={handleRemoveFromTail} isLoader={onDeleteLoading.tail} disabled={inputValue.trim() !== '' || indexValue.trim() !== ''} />
+            <Button data-test-id="addToHead" text="Добавить в head" extraClass={styles.button__extra_top} onClick={handleAddToHead} isLoader={onAddLoading.head} disabled={inputValue.trim() === '' || indexValue.trim() !== ''} />
+            <Button data-test-id="addToTail" text="Добавить в tail" extraClass={styles.button__extra_top} onClick={handleAddToTail} isLoader={onAddLoading.tail} disabled={inputValue.trim() === '' || indexValue.trim() !== ''} />
+            <Button data-test-id="removeFromHead" text="Удалить из head" extraClass={styles.button__extra_top} onClick={handleRemoveFromHead} isLoader={onDeleteLoading.head} disabled={inputValue.trim() !== '' || indexValue.trim() !== ''} />
+            <Button data-test-id="removeFromTail" text="Удалить из tail" extraClass={styles.button__extra_top} onClick={handleRemoveFromTail} isLoader={onDeleteLoading.tail} disabled={inputValue.trim() !== '' || indexValue.trim() !== ''} />
           </div>
         </div>
         <div className={styles.wrap}>
@@ -338,11 +339,12 @@ export const ListPage: React.FC = () => {
               type="number"
               value={indexValue}
               onChange={handleIndexChange}
+              data-test-id="listIndexInput"
             />
           </div>
           <div className={styles.boxes}>
-            <Button text="Добавить по индексу" extraClass={styles.button__extra_bottom} onClick={handleInsertAtIndex} isLoader={onAddLoading.index} disabled={!inputValue.trim() || !indexValue.trim()} />
-            <Button text="Удалить по индексу" extraClass={styles.button__extra_bottom} onClick={handleRemoveAtIndex} isLoader={onDeleteLoading.index} disabled={inputValue.trim() !== '' || indexValue.trim() === ''} />
+            <Button data-test-id="addByIndex" text="Добавить по индексу" extraClass={styles.button__extra_bottom} onClick={handleInsertAtIndex} isLoader={onAddLoading.index} disabled={!inputValue.trim() || !indexValue.trim()} />
+            <Button data-test-id="removeByIndex" text="Удалить по индексу" extraClass={styles.button__extra_bottom} onClick={handleRemoveAtIndex} isLoader={onDeleteLoading.index} disabled={inputValue.trim() !== '' || indexValue.trim() === ''} />
           </div>
         </div>
       </div>

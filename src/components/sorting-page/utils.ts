@@ -17,6 +17,11 @@ export const updateElementState = (arr: ArrayElement[], index: number, state: El
 };
 
 export function* sortBubble(arr: ArrayElement[], direction: Direction): Generator<ArrayElement[]> {
+
+  if (!arr.length) {
+    return arr;
+  }
+
   let sortedArray = [...arr];
 
   for (let i = 0; i < sortedArray.length; i++) {
@@ -43,6 +48,11 @@ export function* sortBubble(arr: ArrayElement[], direction: Direction): Generato
 };
 
 export function* sortSelection(arr: ArrayElement[], direction: Direction): Generator<ArrayElement[]> {
+
+  if (!arr.length) {
+    return arr;
+  }
+
   let workingArray = [...arr];
 
   for (let i = 0; i < workingArray.length - 1; i++) {
