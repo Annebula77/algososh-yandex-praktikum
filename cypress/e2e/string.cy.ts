@@ -30,6 +30,7 @@ describe('StringComponent tests', () => {
       cy.get('button[data-test-id="buttonExtra"]').click();
 
       for (let i = 0; i < testString.length / 2; i++) {
+
         // Получаем текущие первый и последний символы
         const firstChar = testString.charAt(i);
         const lastChar = testString.charAt(testString.length - 1 - i);
@@ -38,7 +39,6 @@ describe('StringComponent tests', () => {
         cy.contains(firstChar).parent().find('[data-test-id="circle"]').should('have.css', 'border-color', state__changing);
         cy.contains(lastChar).parent().find('[data-test-id="circle"]').should('have.css', 'border-color', state__changing);
 
-        // Ожидание завершения анимации обмена местами
         cy.wait(SHORT_DELAY_IN_MS);
 
         // Проверка стилей после обмена местами
