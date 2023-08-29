@@ -23,7 +23,7 @@ describe('StringComponent tests', () => {
       cy.contains(char).parent().find('[data-test-id="circle"]').should('have.css', 'border-color', state__default);
     });
 
-    it('Проверка процесса разворота строки', () => {
+    it('Проверка непосредственно процесса разворота строки', () => {
       const testString = 'abcde';
 
       cy.get('input[data-test-id="inputExtra"]').type(testString);
