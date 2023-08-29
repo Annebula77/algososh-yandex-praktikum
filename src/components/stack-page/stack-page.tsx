@@ -82,12 +82,12 @@ export const StackPage: React.FC = () => {
           <p className={styles.text}>Максимум — 4 символа</p>
         </div>
         <div className={styles.boxes}>
-          <Button text="Добавить" onClick={handleAdd} disabled={isLoading} />
-          <Button text="Удалить" onClick={handleDelete} disabled={symbol.trim() !== ''} />
+          <Button data-test-id="addToStack" text="Добавить" onClick={handleAdd} disabled={isLoading || !symbol} />
+          <Button data-test-id="removeFromStack" text="Удалить" onClick={handleDelete} disabled={symbol.trim() !== ''} />
         </div>
-        <Button text="Очистить" onClick={handleClear} disabled={isLoading} />
+        <Button data-test-id="clearStack" text="Очистить" onClick={handleClear} disabled={isLoading} />
       </div>
-      <div className={styles.circle__container}>
+      <div data-test-id="stackCircleContainer" className={styles.circle__container}>
         {stackArray.map((item, index) =>
           <Circle
             key={index}
